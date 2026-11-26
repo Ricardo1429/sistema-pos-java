@@ -1,0 +1,9 @@
+target/
+data/
+logs/
+.git/
+.playwright-mcp/
+AGENTS.md
+*.md
+img/
+.env

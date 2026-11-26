@@ -1,13 +1,13 @@
 services:
   - type: web
     name: restobar-pos
-    runtime: java
+    runtime: docker
     plan: free
     region: oregon
-    buildCommand: ./mvnw -B clean package -DskipTests
-    startCommand: java -jar target/pos-1.0.0.jar --spring.profiles.active=cloud --server.port=$PORT
     healthCheckPath: /login
     envVars:
+      - key: PORT
+        value: 8080
       - key: DB_URL
         sync: false
       - key: DB_USER
