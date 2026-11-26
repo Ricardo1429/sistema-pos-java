@@ -114,7 +114,7 @@
                             </button>
                         </form>
 
-                        <form th:if="${mesa.estado.name() != 'DISPONIBLE'}"
+                        <form th:if="${mesa.estado.name() != 'DISPONIBLE' and !mesasConOrdenActiva.contains(mesa.id)}"
                               th:action="@{/mesas/{id}/liberar(id=${mesa.id})}" method="post">
                             <button class="btn btn-sm btn-outline-secondary w-100" type="submit">
                                 <i class="bi bi-arrow-counterclockwise me-1"></i>Liberar

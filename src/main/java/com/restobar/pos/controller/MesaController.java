@@ -70,10 +70,19 @@ public class MesaController {
                 .map(Mesa::getId)
                 .collect(Collectors.toSet());
 
+        Set<Long> mesasConOrdenActiva = mesas.stream()
+                .filter(mesa -> ordenRepository.findByMesaId(mesa.getId()).stream()
+                        .anyMatch(orden -> orden.getEstado() == EstadoOrden.ABIERTA
+                                || orden.getEstado() == EstadoOrden.EN_PREPARACION
+                                || orden.getEstado() == EstadoOrden.LISTA))
+                .map(Mesa::getId)
+                .collect(Collectors.toSet());
+
         model.addAttribute("mesas", mesas);
         model.addAttribute("zonas", ZonaMesa.values());
         model.addAttribute("conteo", conteo);
         model.addAttribute("mesasSinConsumo", mesasSinConsumo);
+        model.addAttribute("mesasConOrdenActiva", mesasConOrdenActiva);
         return "mesas/listar";
     }
 
