@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
+<body>
+<aside class="sidebar d-flex flex-column" th:fragment="sidebar"
+       th:with="uri=${#ctx.getExchange() != null ? #ctx.getExchange().getRequest().getPathWithinApplication() : ''}">
+
+    <div class="d-flex align-items-center gap-2 px-3 py-4">
+        <a class="d-flex align-items-center gap-2 text-white text-decoration-none flex-grow-1" th:href="@{/}">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-3 p-1"
+                  style="background:rgba(225,29,72,.12);border:1px solid rgba(225,29,72,.3)">
+                <svg width="30" height="30" viewBox="0 0 100 100" fill="none"
+                     xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RestoBar POS">
+                    <path d="M18 22H82L50 58L18 22Z" stroke="#F8FAFC" stroke-width="5" stroke-linejoin="round"/>
+                    <path d="M27 32H73L50 58L27 32Z" fill="#E11D48" fill-opacity="0.85"/>
+                    <path d="M43 16V34C43 37.866 46.134 41 50 41C53.866 41 57 37.866 57 34V16" stroke="#F8FAFC" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="16" x2="50" y2="33" stroke="#F8FAFC" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="50" cy="49" r="3.5" fill="#F8FAFC"/>
+                    <line x1="50" y1="58" x2="50" y2="82" stroke="#F8FAFC" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M32 82H68" stroke="#F8FAFC" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M26 87H74" stroke="#E11D48" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <span class="fs-5 fw-bold">RestoBar <span class="brand-accent">POS</span></span>
+        </a>
+        <button type="button" class="btn btn-sm btn-link text-secondary d-lg-none"
+                id="btnCerrarSidebar" aria-label="Cerrar menú">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <p class="text-secondary small fw-semibold mb-2 px-3 mt-1">MENÚ PRINCIPAL</p>
+
+    <ul class="nav flex-column px-2 pb-3">
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2" th:href="@{/}"
+               th:classappend="${uri == '/'} ? 'active'">
+                <i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard
+            </a>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasAnyRole('ADMIN','MESERO','CAJERO','SUPERVISOR')">
+            <a class="nav-link d-flex align-items-center gap-2" th:href="@{/mesas}"
+               th:classappend="${#strings.startsWith(uri, '/mesas')} ? 'active'">
+                <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i> Mesas
+            </a>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasAnyRole('ADMIN','MESERO','CAJERO','SUPERVISOR')">
+            <a class="nav-link d-flex align-items-center gap-2" th:href="@{/ordenes}"
+               th:classappend="${#strings.startsWith(uri, '/ordenes')} ? 'active'">
+                <i class="bi bi-receipt" aria-hidden="true"></i> Órdenes
+            </a>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasAnyRole('ADMIN','SUPERVISOR')">
+            <a class="nav-link d-flex align-items-center gap-2" th:href="@{/menu}"
+               th:classappend="${#strings.startsWith(uri, '/menu')} ? 'active'">
+                <i class="bi bi-journal-text" aria-hidden="true"></i> Menú
+            </a>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasAnyRole('ADMIN','COCINERO_BARMAN','SUPERVISOR')">
+            <a class="nav-link d-flex align-items-center gap-2" th:href="@{/cocina}"
+               th:classappend="${#strings.startsWith(uri, '/cocina')} ? 'active'">
+                <i class="bi bi-fire" aria-hidden="true"></i> Cocina
+            </a>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasAnyRole('ADMIN','CAJERO','SUPERVISOR')">
+            <a class="nav-link d-flex align-items-center gap-2" th:href="@{/caja}"
+               th:classappend="${#strings.startsWith(uri, '/caja')} ? 'active'">
+                <i class="bi bi-cash-stack" aria-hidden="true"></i> Caja
+            </a>
+        </li>
+    </ul>
+
+    <div class="mt-auto px-3 py-3 border-top border-secondary border-opacity-25" sec:authorize="isAuthenticated()">
+        <p class="text-uppercase text-secondary small fw-semibold mb-2">
+            <i class="bi bi-person-badge me-1" aria-hidden="true"></i>Rol actual
+        </p>
+        <span class="badge rounded-pill text-bg-light"
+              th:text="${rolActual != null ? rolActual : 'Sin rol'}">ADMIN</span>
+        <p class="small text-secondary mt-2 mb-0">Cierra sesión con el botón Salir de la barra superior.</p>
+    </div>
+</aside>
+</body>
+</html>

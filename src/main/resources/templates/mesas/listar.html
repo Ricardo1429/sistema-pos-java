@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/layout :: head('Mesas')}"></head>
+<body th:with="tituloPagina='Mesas'">
+
+<aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="p-3 p-lg-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h1 class="h4 fw-bold mb-1">Mesas</h1>
+            <p class="text-secondary mb-0 small">Abre, cobra o libera mesas del salón.</p>
+        </div>
+        <button class="btn btn-primary fw-semibold" type="button"
+                data-bs-toggle="modal" data-bs-target="#modalNuevaMesa">
+            <i class="bi bi-plus-lg me-1"></i>Nueva mesa
+        </button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-4">
+            <div class="card card-pos h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary text-uppercase small fw-semibold mb-1">Disponibles</p>
+                        <div class="stat-value text-success" th:text="${conteo['disponibles']}">0</div>
+                    </div>
+                    <i class="bi bi-check-circle fs-3 text-success"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-4">
+            <div class="card card-pos h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary text-uppercase small fw-semibold mb-1">Ocupadas</p>
+                        <div class="stat-value text-danger" th:text="${conteo['ocupadas']}">0</div>
+                    </div>
+                    <i class="bi bi-people fs-3 text-danger"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-4">
+            <div class="card card-pos h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary text-uppercase small fw-semibold mb-1">Por cobrar</p>
+                        <div class="stat-value text-warning-emphasis" th:text="${conteo['porCobrar']}">0</div>
+                    </div>
+                    <i class="bi bi-cash-stack fs-3 text-warning-emphasis"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Filtrar por zona">
+        <button type="button" class="btn btn-sm btn-outline-secondary active filtro-zona"
+                data-filtro="TODAS">Todas</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary filtro-zona"
+                th:each="zona : ${zonas}" th:data-filtro="${zona.name()}"
+                th:text="${#strings.capitalize(#strings.replace(#strings.toLowerCase(zona.name()), '_', ' '))}">Salón</button>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-sm-6 col-lg-4 col-xxl-3" th:each="mesa : ${mesas}"
+             th:data-zona="${mesa.zona.name()}" th:data-estado="${mesa.estado.name()}">
+            <div class="card card-pos mesa-card h-100"
+                 th:classappend="${mesa.estado.name() == 'DISPONIBLE' ? 'estado-disponible' : (mesa.estado.name() == 'OCUPADA' ? 'estado-ocupada' : 'estado-cobrar')}">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <div class="stat-value tabular-nums" th:text="${mesa.numero}">1</div>
+                            <small class="text-secondary">
+                                <i class="bi bi-people me-1"></i>
+                                <span th:text="${mesa.capacidad}">4</span> personas ·
+                                <span th:text="${mesa.zona}">SALON</span>
+                            </small>
+                        </div>
+                        <span class="badge rounded-pill badge-estado"
+                              th:classappend="${mesa.estado.name() == 'DISPONIBLE' ? 'badge-soft-success' : (mesa.estado.name() == 'OCUPADA' ? 'badge-soft-danger' : 'badge-soft-warning')}"
+                              th:text="${mesa.estado.name() == 'DISPONIBLE' ? 'Disponible' : (mesa.estado.name() == 'OCUPADA' ? 'Ocupada' : 'Por cobrar')}">
+                            Disponible
+                        </span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-auto pt-3">
+                        <form th:if="${mesa.estado.name() == 'DISPONIBLE'}"
+                              th:action="@{/mesas/{id}/abrir(id=${mesa.id})}" method="post">
+                            <button class="btn btn-sm btn-success w-100" type="submit">
+                                <i class="bi bi-unlock me-1"></i>Abrir
+                            </button>
+                        </form>
+
+                        <form th:if="${mesa.estado.name() == 'OCUPADA' or mesa.estado.name() == 'POR_COBRAR'}"
+                              th:action="@{/mesas/{id}/pedir-mas(id=${mesa.id})}" method="post">
+                            <button class="btn btn-sm btn-danger w-100" type="submit">
+                                <i class="bi bi-plus-circle me-1"></i>Pedir más
+                            </button>
+                        </form>
+
+                        <form th:if="${mesa.estado.name() == 'OCUPADA'}"
+                              th:action="@{/mesas/{id}/por-cobrar(id=${mesa.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-secondary w-100" type="submit">
+                                <i class="bi bi-cash-stack me-1"></i>Por cobrar
+                            </button>
+                        </form>
+
+                        <form th:if="${mesa.estado.name() == 'OCUPADA' and mesasSinConsumo.contains(mesa.id)}"
+                              th:action="@{/mesas/{id}/cerrar-sin-consumo(id=${mesa.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-secondary w-100" type="submit">
+                                <i class="bi bi-x-circle me-1"></i>Cerrar sin pedido
+                            </button>
+                        </form>
+
+                        <form th:if="${mesa.estado.name() != 'DISPONIBLE'}"
+                              th:action="@{/mesas/{id}/liberar(id=${mesa.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-secondary w-100" type="submit">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Liberar
+                            </button>
+                        </form>
+
+                        <form th:if="${mesa.estado.name() == 'DISPONIBLE'}"
+                              th:action="@{/mesas/{id}/eliminar(id=${mesa.id})}" method="post"
+                              onsubmit="return confirm('¿Eliminar mesa?');">
+                            <button class="btn btn-sm btn-outline-secondary w-100" type="submit">
+                                <i class="bi bi-trash me-1"></i>Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-secondary small mt-3" th:if="${#lists.isEmpty(mesas)}">No hay mesas registradas.</p>
+
+</main>
+
+<!-- Modal: nueva mesa -->
+<div class="modal fade" id="modalNuevaMesa" tabindex="-1" aria-labelledby="tituloNuevaMesa" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0">
+            <form th:action="@{/mesas/nueva}" method="post">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="tituloNuevaMesa">Nueva mesa</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="numero">Número de mesa</label>
+                        <input type="text" class="form-control" id="numero" name="numero" maxlength="20" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="zona">Zona</label>
+                        <select class="form-select" id="zona" name="zona" required>
+                            <option th:each="zona : ${zonas}" th:value="${zona}"
+                                    th:text="${#strings.capitalize(#strings.replace(#strings.toLowerCase(zona.name()), '_', ' '))}">
+                                Salón
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold" for="capacidad">Capacidad</label>
+                        <input type="number" class="form-control" id="capacidad" name="capacidad"
+                               min="1" value="4" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear mesa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var botones = document.querySelectorAll('.filtro-zona');
+        var tarjetas = document.querySelectorAll('[data-zona]');
+
+        botones.forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                var filtro = boton.dataset.filtro;
+                botones.forEach(function (otro) { otro.classList.remove('active'); });
+                boton.classList.add('active');
+                tarjetas.forEach(function (tarjeta) {
+                    var visible = filtro === 'TODAS' || tarjeta.dataset.zona === filtro;
+                    tarjeta.classList.toggle('d-none', !visible);
+                });
+            });
+        });
+    });
+</script>
+</body>
+</html>

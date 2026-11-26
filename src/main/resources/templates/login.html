@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es" th:with="csrfWarm=${_csrf != null ? _csrf.token : null}">
+<head th:replace="~{fragments/layout :: head('Iniciar sesión')}"></head>
+<body class="login-bg d-flex align-items-center justify-content-center py-4">
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="row g-0 login-shell">
+
+                <div class="col-lg-6 login-hero d-none d-lg-flex p-5">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-4"
+                             style="width:56px;height:56px;background:rgba(225,29,72,.12);border:1px solid rgba(225,29,72,.32)">
+                            <svg width="32" height="32" viewBox="0 0 100 100" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RestoBar POS">
+                                <path d="M18 22H82L50 58L18 22Z" stroke="#F8FAFC" stroke-width="6" stroke-linejoin="round"/>
+                                <path d="M27 32H73L50 58L27 32Z" fill="#E11D48" fill-opacity="0.9"/>
+                                <path d="M43 16V34C43 37.866 46.134 41 50 41C53.866 41 57 37.866 57 34V16" stroke="#F8FAFC" stroke-width="5" stroke-linecap="round"/>
+                                <line x1="50" y1="16" x2="50" y2="33" stroke="#F8FAFC" stroke-width="5" stroke-linecap="round"/>
+                                <circle cx="50" cy="49" r="4" fill="#F8FAFC"/>
+                                <line x1="50" y1="58" x2="50" y2="82" stroke="#F8FAFC" stroke-width="6" stroke-linecap="round"/>
+                                <path d="M32 82H68" stroke="#F8FAFC" stroke-width="6" stroke-linecap="round"/>
+                                <path d="M26 88H74" stroke="#E11D48" stroke-width="4" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h1 class="fw-bold mb-0" style="font-size:2rem;letter-spacing:-0.02em">
+                            <span class="text-white">RestoBar</span> <span style="color:#E11D48">POS</span>
+                        </h1>
+                    </div>
+                    <p class="text-secondary mb-4">Sistema de Punto de Venta para tu local.</p>
+
+                    <div class="d-flex flex-column gap-2 mt-2">
+                        <div class="login-feature">
+                            <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
+                            <span>Mesas y sala siempre bajo control</span>
+                        </div>
+                        <div class="login-feature">
+                            <i class="bi bi-receipt" aria-hidden="true"></i>
+                            <span>Órdenes y cobros en un solo flujo</span>
+                        </div>
+                        <div class="login-feature">
+                            <i class="bi bi-fire" aria-hidden="true"></i>
+                            <span>Cocina y barra sincronizadas</span>
+                        </div>
+                    </div>
+
+                    <p class="small mt-5 mb-0">Uso interno · Acceso restringido</p>
+                </div>
+
+                <div class="col-12 col-lg-6 login-panel">
+                    <h2 class="h5 fw-bold mb-1 text-white">Iniciar sesión</h2>
+                    <p class="text-secondary small mb-4">Ingresa con tu usuario asignado.</p>
+
+                    <div class="alert alert-danger d-flex align-items-center" th:if="${param.error}"
+                         role="alert" aria-live="assertive">
+                        <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+                        <span>Usuario o contraseña incorrectos</span>
+                    </div>
+                    <div class="alert alert-success d-flex align-items-center" id="logoutOk" th:if="${param.logout}"
+                         role="alert" aria-live="polite">
+                        <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+                        <span>Sesión cerrada correctamente</span>
+                    </div>
+
+                    <form th:action="@{/login}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="username">Usuario</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person" aria-hidden="true"></i></span>
+                                <input type="text" class="form-control login-input" id="username" name="username"
+                                       placeholder="admin" autocomplete="username" autofocus required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold" for="password">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock" aria-hidden="true"></i></span>
+                                <input type="password" class="form-control login-input" id="password" name="password"
+                                       placeholder="••••••••" autocomplete="current-password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword"
+                                        aria-label="Mostrar contraseña" aria-pressed="false" aria-controls="password">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button class="btn login-btn w-100 py-2" type="submit">
+                            <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Ingresar
+                        </button>
+                    </form>
+
+                    <div class="card border-0 bg-transparent mt-4">
+                        <div class="card-body p-3">
+                            <button class="btn btn-outline-secondary text-light bg-transparent border-secondary text-decoration-none w-100 d-flex justify-content-between align-items-center px-0"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#usuariosDemo"
+                                    aria-expanded="true" aria-controls="usuariosDemo">
+                                <span class="fw-semibold"><i class="bi bi-people me-2" aria-hidden="true"></i>Usuarios demo</span>
+                                <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                            </button>
+
+                            <div class="collapse show" id="usuariosDemo">
+                                <ul class="demo-list small mb-3 mt-2">
+                                    <li>
+                                        <code>admin</code>
+                                        <span class="badge text-bg-danger">ADMIN</span>
+                                    </li>
+                                    <li>
+                                        <code>mesero1</code>
+                                        <span class="badge text-bg-info">MESERO</span>
+                                    </li>
+                                    <li>
+                                        <code>cocina1</code>
+                                        <span class="badge text-bg-warning">COCINERO_BARMAN</span>
+                                    </li>
+                                    <li>
+                                        <code>cajero1</code>
+                                        <span class="badge text-bg-success">CAJERO</span>
+                                    </li>
+                                    <li>
+                                        <code>supervisor1</code>
+                                        <span class="badge text-bg-secondary">SUPERVISOR</span>
+                                    </li>
+                                </ul>
+                                <p class="small text-secondary mb-0">
+                                    Contraseña por defecto: la definida en <code>SEED_PASSWORD</code>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    (function () {
+        var boton = document.getElementById('togglePassword');
+        var campo = document.getElementById('password');
+        if (!boton || !campo) return;
+
+        boton.addEventListener('click', function () {
+            var visible = campo.type === 'password';
+            campo.type = visible ? 'text' : 'password';
+            var icono = boton.querySelector('i');
+            if (icono) {
+                icono.classList.toggle('bi-eye', !visible);
+                icono.classList.toggle('bi-eye-slash', visible);
+            }
+            boton.setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+            boton.setAttribute('aria-pressed', visible ? 'true' : 'false');
+        });
+    })();
+
+    (function () {
+        var aviso = document.getElementById('logoutOk');
+        if (aviso) {
+            setTimeout(function () { aviso.classList.add('d-none'); }, 5000);
+        }
+    })();
+</script>
+</body>
+</html>

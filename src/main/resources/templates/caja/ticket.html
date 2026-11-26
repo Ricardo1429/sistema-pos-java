@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Ticket')}"></head>
+<body class="d-flex">
+<aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+<main class="flex-grow-1">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="p-4">
+        <div class="d-flex flex-wrap gap-2 mb-3 d-print-none">
+            <button type="button" class="btn btn-danger" onclick="window.print()">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+            <a th:href="@{/caja}" class="btn btn-outline-secondary">Volver a caja</a>
+        </div>
+
+        <div class="tirilla mx-auto">
+            <div class="text-center">
+                <h1 class="h5 fw-bold mb-0">RESTOBAR POS</h1>
+                <div>NIT 900.123.456-7</div>
+                <div class="fw-semibold">Tirilla de venta</div>
+            </div>
+
+            <hr class="my-2">
+
+            <div class="d-flex justify-content-between">
+                <span>Consecutivo</span>
+                <span class="fw-semibold" th:text="${ticket.consecutivo}">T-000</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Fecha</span>
+                <span th:text="${ticket.fechaEmision != null ? #temporals.format(ticket.fechaEmision, 'dd/MM/yyyy HH:mm') : '—'}">
+                    01/01/2026 12:00
+                </span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Cajero</span>
+                <span th:text="${ticket.turnoCaja != null and ticket.turnoCaja.cajero != null ? ticket.turnoCaja.cajero.nombre : '—'}">
+                    Cajero
+                </span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Cliente</span>
+                <span th:text="${ticket.clienteNombre}">Consumidor Final</span>
+            </div>
+
+            <hr class="my-2">
+
+            <table class="w-100">
+                <tbody>
+                <tr th:each="detalle : ${detalles}"
+                    th:if="${detalle.estadoItem.name() != 'ANULADO'}">
+                    <td th:text="|${detalle.cantidad} x ${detalle.producto.nombre}|">1 x Producto</td>
+                    <td class="text-end"
+                        th:text="|$ ${#numbers.formatDecimal(detalle.subtotal(), 3, 'POINT', 2, 'COMMA')}|">$ 0,00</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <hr class="my-2">
+
+            <div class="d-flex justify-content-between">
+                <span>Subtotal</span>
+                <span th:text="|$ ${#numbers.formatDecimal(ticket.orden.subtotal, 3, 'POINT', 2, 'COMMA')}|">$ 0,00</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Impoconsumo 8%</span>
+                <span th:text="|$ ${#numbers.formatDecimal(ticket.orden.impoconsumo, 3, 'POINT', 2, 'COMMA')}|">$ 0,00</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Propina</span>
+                <span th:text="|$ ${#numbers.formatDecimal(ticket.orden.propina, 3, 'POINT', 2, 'COMMA')}|">$ 0,00</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold fs-6 mt-1">
+                <span>TOTAL</span>
+                <span th:text="|$ ${#numbers.formatDecimal(ticket.orden.total, 3, 'POINT', 2, 'COMMA')}|">$ 0,00</span>
+            </div>
+
+            <hr class="my-2">
+
+            <div class="d-flex justify-content-between">
+                <span>Método de pago</span>
+                <span th:text="${ticket.metodoPago}">EFECTIVO</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Recibido</span>
+                <span th:text="|$ ${#numbers.formatDecimal(ticket.montoRecibido, 3, 'POINT', 2, 'COMMA')}|">$ 0,00</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Cambio</span>
+                <span th:text="${ticket.cambioDevuelto != null ? '$ ' + #numbers.formatDecimal(ticket.cambioDevuelto, 3, 'POINT', 2, 'COMMA') : '—'}">
+                    $ 0,00
+                </span>
+            </div>
+
+            <hr class="my-2">
+
+            <div class="text-center">
+                <div class="fw-semibold">¡Gracias por su visita!</div>
+                <div>Este documento no es factura electrónica</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+<style>
+    .tirilla {
+        max-width: 380px;
+        font-family: "Courier New", ui-monospace, monospace;
+        font-size: .85rem;
+        border: 1px dashed #9ca3af;
+        border-radius: .5rem;
+        background-color: #fff;
+        padding: 1.25rem;
+    }
+
+    .tirilla table {
+        font-size: .85rem;
+    }
+
+    @page {
+        margin: 8mm;
+    }
+
+    @media print {
+        aside,
+        .navbar,
+        .sidebar {
+            display: none !important;
+        }
+
+        body {
+            display: block !important;
+            padding-left: 0 !important;
+            background-color: #fff !important;
+        }
+
+        main {
+            width: 100% !important;
+        }
+
+        .p-4 {
+            padding: 0 !important;
+        }
+
+        .tirilla {
+            max-width: 100%;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+        }
+    }
+</style>
+</body>
+</html>
+

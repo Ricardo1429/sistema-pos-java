@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/layout :: head('Producto')}"></head>
+<body th:with="tituloPagina=${edicion ? 'Editar producto' : 'Nuevo producto'}">
+
+<aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="p-3 p-lg-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h1 class="h4 fw-bold mb-1"
+                th:text="${edicion} ? 'Editar producto' : 'Nuevo producto'">Nuevo producto</h1>
+            <p class="text-secondary mb-0 small">Completa los datos de la carta.</p>
+        </div>
+        <a class="btn btn-outline-secondary" th:href="@{/menu}">
+            <i class="bi bi-arrow-left me-1"></i>Volver al menú
+        </a>
+    </div>
+
+    <div class="card card-pos">
+        <div class="card-body p-4">
+            <form th:action="@{/menu/guardar}" th:object="${producto}" method="post" novalidate>
+
+                <input type="hidden" th:field="*{id}">
+
+                <div class="alert alert-danger" th:if="${#fields.hasAnyErrors()}" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Revisa los campos marcados.
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-semibold" for="codigo">Código</label>
+                        <input type="text" class="form-control" id="codigo" th:field="*{codigo}"
+                               th:classappend="${#fields.hasErrors('codigo')} ? 'is-invalid'"
+                               placeholder="P001" maxlength="40">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('codigo')}"
+                             th:errors="*{codigo}">Error</div>
+                    </div>
+
+                    <div class="col-12 col-md-8">
+                        <label class="form-label fw-semibold" for="nombre">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" th:field="*{nombre}"
+                               th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'"
+                               placeholder="Nombre del producto" maxlength="120" required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}"
+                             th:errors="*{nombre}">Error</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="descripcion">Descripción</label>
+                        <textarea class="form-control" id="descripcion" th:field="*{descripcion}" rows="2"
+                                  th:classappend="${#fields.hasErrors('descripcion')} ? 'is-invalid'"
+                                  placeholder="Detalle opcional" maxlength="255"></textarea>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('descripcion')}"
+                             th:errors="*{descripcion}">Error</div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-semibold" for="categoria">Categoría</label>
+                        <select class="form-select" id="categoria" th:field="*{categoria}"
+                                th:classappend="${#fields.hasErrors('categoria')} ? 'is-invalid'" required>
+                            <option value="">Selecciona una categoría</option>
+                            <option th:each="cat : ${categorias}" th:value="${cat}"
+                                    th:text="${#strings.capitalize(#strings.replace(#strings.toLowerCase(cat.name()), '_', ' '))}">
+                                Categoría
+                            </option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('categoria')}"
+                             th:errors="*{categoria}">Error</div>
+                    </div>
+
+                    <div class="col-6 col-md-4">
+                        <label class="form-label fw-semibold" for="precio">Precio</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="precio" th:field="*{precio}"
+                                   th:classappend="${#fields.hasErrors('precio')} ? 'is-invalid'"
+                                   step="0.01" min="1" placeholder="0.00" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('precio')}"
+                                 th:errors="*{precio}">Error</div>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-md-2">
+                        <label class="form-label fw-semibold" for="stockActual">Stock actual</label>
+                        <input type="number" class="form-control" id="stockActual" th:field="*{stockActual}"
+                               th:classappend="${#fields.hasErrors('stockActual')} ? 'is-invalid'"
+                               min="0" required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('stockActual')}"
+                             th:errors="*{stockActual}">Error</div>
+                    </div>
+
+                    <div class="col-6 col-md-2">
+                        <label class="form-label fw-semibold" for="stockMinimo">Stock mínimo</label>
+                        <input type="number" class="form-control" id="stockMinimo" th:field="*{stockMinimo}"
+                               th:classappend="${#fields.hasErrors('stockMinimo')} ? 'is-invalid'"
+                               min="0" required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('stockMinimo')}"
+                             th:errors="*{stockMinimo}">Error</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="imagenUrl">Imagen (URL)</label>
+                        <input type="url" class="form-control" id="imagenUrl" th:field="*{imagenUrl}"
+                               th:classappend="${#fields.hasErrors('imagenUrl')} ? 'is-invalid'"
+                               placeholder="https://..." maxlength="255">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('imagenUrl')}"
+                             th:errors="*{imagenUrl}">Error</div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="disponible"
+                                   th:field="*{disponible}">
+                            <label class="form-check-label" for="disponible">Disponible para la venta</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a class="btn btn-outline-secondary" th:href="@{/menu}">Cancelar</a>
+                    <button class="btn btn-primary fw-semibold" type="submit">
+                        <i class="bi bi-save me-1"></i>Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

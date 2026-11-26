@@ -1,0 +1,11 @@
+target/
+data/
+logs/
+*.log
+.env
+.idea/
+*.iml
+logs/compliance/
+AGENTS.md
+.playwright-mcp/
+img/

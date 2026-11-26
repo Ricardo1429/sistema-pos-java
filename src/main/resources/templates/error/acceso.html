@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/layout :: head('Acceso denegado')}"></head>
+<body class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+<div class="card card-pos shadow-sm border-0 p-4 text-center" style="max-width: 32rem;">
+    <div class="fs-1 text-warning mb-2"><i class="bi bi-shield-lock"></i></div>
+    <h1 class="h4 fw-bold mb-2">Acceso denegado</h1>
+    <p class="text-secondary mb-4">
+        No tienes permiso para acceder a esa sección o tu sesión caducó. Vuelve a iniciar sesión si es necesario.
+    </p>
+    <a class="btn btn-primary" th:href="@{/}">
+        <i class="bi bi-house me-1"></i>Volver al inicio
+    </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body th:with="tituloPagina='Dashboard'">
+
+<aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="p-3 p-lg-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h1 class="h4 fw-bold mb-1">Resumen del día</h1>
+            <p class="text-secondary mb-0 small">Estado operativo de mesas, órdenes y ventas.</p>
+        </div>
+        <span class="badge rounded-pill text-bg-light border" th:text="|${turnoAbierto != null ? 'Turno abierto' : 'Sin turno'}|">Sin turno</span>
+    </div>
+
+    <th:block sec:authorize="hasAnyRole('ADMIN','CAJERO','SUPERVISOR')">
+        <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2"
+             th:if="${turnoAbierto == null}" role="alert">
+            <span><i class="bi bi-exclamation-triangle me-2"></i>No hay turno de caja abierto</span>
+            <a class="btn btn-sm btn-warning fw-semibold" th:href="@{/caja}">Abrir caja</a>
+        </div>
+    </th:block>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card card-pos h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-secondary text-uppercase small fw-semibold mb-1">Mesas totales</p>
+                            <div class="stat-value" th:text="${totalMesas}">0</div>
+                        </div>
+                        <span class="rounded-3 p-2 bg-primary-subtle text-primary">
+                            <i class="bi bi-grid-3x3-gap fs-4"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card card-pos h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-secondary text-uppercase small fw-semibold mb-1">Ocupadas</p>
+                            <div class="stat-value" th:text="${mesasOcupadas}">0</div>
+                            <p class="small text-secondary mb-0">
+                                <span th:text="${mesasPorCobrar}">0</span> por cobrar
+                            </p>
+                        </div>
+                        <span class="rounded-3 p-2 bg-danger-subtle text-danger">
+                            <i class="bi bi-people fs-4"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card card-pos h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-secondary text-uppercase small fw-semibold mb-1">Órdenes abiertas</p>
+                            <div class="stat-value" th:text="${ordenesAbiertas}">0</div>
+                        </div>
+                        <span class="rounded-3 p-2 bg-warning-subtle text-warning-emphasis">
+                            <i class="bi bi-receipt fs-4"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card card-pos h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-secondary text-uppercase small fw-semibold mb-1">Ventas de hoy</p>
+                            <div class="stat-value" th:text="|$ ${#numbers.formatInteger(ventasHoy, 3, 'POINT')}|">$ 0</div>
+                            <p class="small text-secondary mb-0" th:text="|${ticketsHoy} tickets|">0 tickets</p>
+                        </div>
+                        <span class="rounded-3 p-2 bg-success-subtle text-success">
+                            <i class="bi bi-cash-stack fs-4"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Mapa de mesas -->
+        <div class="col-12 col-xl-8">
+            <div class="card card-pos">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 fw-bold mb-0"><i class="bi bi-grid-3x3-gap me-2 text-secondary"></i>Mapa de mesas</h2>
+                        <a class="btn btn-sm btn-outline-secondary" th:href="@{/mesas}">Gestionar mesas</a>
+                    </div>
+
+                    <div class="mb-4 zona-seccion" th:each="zona : ${zonas}">
+                        <h3 class="text-uppercase text-secondary small fw-semibold mb-2" th:text="${zona}">SALON</h3>
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6 col-lg-4 mesa-item"
+                                 th:each="mesa : ${mesas}" th:if="${mesa.zona == zona}">
+                                <div class="card card-pos mesa-card h-100"
+                                     th:classappend="${mesa.estado.name() == 'DISPONIBLE' ? 'estado-disponible' : (mesa.estado.name() == 'OCUPADA' ? 'estado-ocupada' : 'estado-cobrar')}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="stat-value tabular-nums" th:text="${mesa.numero}">1</div>
+                                                <small class="text-secondary">
+                                                    <i class="bi bi-people me-1"></i>
+                                                    <span th:text="${mesa.capacidad}">4</span> personas
+                                                </small>
+                                            </div>
+                                            <span class="badge rounded-pill badge-estado"
+                                                  th:classappend="${mesa.estado.name() == 'DISPONIBLE' ? 'badge-soft-success' : (mesa.estado.name() == 'OCUPADA' ? 'badge-soft-danger' : 'badge-soft-warning')}"
+                                                  th:text="${mesa.estado.name() == 'DISPONIBLE' ? 'Disponible' : (mesa.estado.name() == 'OCUPADA' ? 'Ocupada' : 'Por cobrar')}">
+                                                Disponible
+                                            </span>
+                                        </div>
+
+                                        <form class="d-grid mt-3"
+                                              th:if="${mesa.estado.name() == 'DISPONIBLE'}"
+                                              th:action="@{/mesas/{id}/abrir(id=${mesa.id})}" method="post">
+                                            <button class="btn btn-sm btn-success" type="submit">
+                                                <i class="bi bi-unlock me-1"></i>Abrir
+                                            </button>
+                                        </form>
+
+                                        <div class="d-grid gap-2 mt-3" th:if="${mesa.estado.name() == 'OCUPADA'}">
+                                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/ordenes}">
+                                                <i class="bi bi-receipt me-1"></i>Ver órdenes
+                                            </a>
+                                            <form class="d-grid"
+                                                  th:action="@{/mesas/{id}/por-cobrar(id=${mesa.id})}" method="post">
+                                                <button class="btn btn-sm btn-warning" type="submit">
+                                                    <i class="bi bi-cash-stack me-1"></i>Por cobrar
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <th:block sec:authorize="hasAnyRole('ADMIN','CAJERO','SUPERVISOR')">
+                                            <div class="d-grid mt-3" th:if="${mesa.estado.name() == 'POR_COBRAR'}">
+                                                <a class="btn btn-sm btn-warning" th:href="@{/caja}">
+                                                    <i class="bi bi-cash-coin me-1"></i>Ir a caja
+                                                </a>
+                                            </div>
+                                        </th:block>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-secondary small mb-0" th:if="${#lists.isEmpty(mesas)}">
+                        No hay mesas registradas.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock bajo -->
+        <div class="col-12 col-xl-4">
+            <div class="card card-pos h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 fw-bold mb-0"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Stock bajo</h2>
+                        <a class="btn btn-sm btn-outline-secondary" th:href="@{/menu}">Ver menú</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                            <tr class="text-secondary small text-uppercase">
+                                <th scope="col">Producto</th>
+                                <th scope="col" class="text-center">Stock</th>
+                                <th scope="col" class="text-center">Mínimo</th>
+                                <th scope="col" class="text-center">Acción</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="producto : ${alertasStock}">
+                                <td th:text="${producto.nombre}">Producto</td>
+                                <td class="text-center">
+                                    <span class="badge text-bg-danger" th:text="${producto.stockActual}">0</span>
+                                </td>
+                                <td class="text-center text-secondary" th:text="${producto.stockMinimo}">0</td>
+                                <td class="text-center">
+                                    <form th:action="@{/menu/{id}/reponer(id=${producto.id})}" method="post">
+                                        <input type="hidden" name="cantidad" value="10">
+                                        <button class="btn btn-sm btn-outline-success" type="submit">
+                                            <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>+ Reponer
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="text-secondary small mb-0 mt-3" th:if="${#lists.isEmpty(alertasStock)}">
+                        <i class="bi bi-check-circle me-1 text-success"></i>Sin alertas de stock.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

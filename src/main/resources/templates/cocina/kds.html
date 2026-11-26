@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Cocina KDS')}"></head>
+<body class="d-flex">
+<meta http-equiv="refresh" content="20">
+<aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+<main class="flex-grow-1">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="p-4 kds-board">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div>
+                <h1 class="h3 fw-bold text-white mb-0"><i class="bi bi-fire"></i> Cocina · KDS</h1>
+                <p class="text-secondary mb-0 small">
+                    Actualizado
+                    <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">00:00:00</span>
+                    · recarga automática cada 20 s
+                </p>
+            </div>
+            <a th:href="@{/ordenes}" class="btn btn-sm btn-outline-light">
+                <i class="bi bi-receipt"></i> Órdenes
+            </a>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-4">
+                <section class="kds-col h-100">
+                    <header class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 fw-bold text-white mb-0">Pendientes</h2>
+                        <span class="badge text-bg-warning" th:text="${#lists.size(pendientes)}">0</span>
+                    </header>
+
+                    <p class="text-secondary small" th:if="${#lists.isEmpty(pendientes)}">Sin ítems pendientes.</p>
+
+                    <article class="kds-card" th:each="detalle : ${pendientes}">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <span class="badge text-bg-dark" th:text="${detalle.orden.numeroOrden}">ORD-000</span>
+                            <span class="text-secondary small"
+                                  th:text="${detalle.orden.createdAt != null ? #temporals.format(detalle.orden.createdAt, 'HH:mm') : '--:--'}">00:00</span>
+                        </div>
+                        <h3 class="h6 fw-bold mt-2 mb-1" th:text="${detalle.producto.nombre}">Producto</h3>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="kds-cantidad" th:text="|x${detalle.cantidad}|">x1</span>
+                            <span class="text-secondary small"
+                                  th:text="${detalle.orden.mesa != null ? 'Mesa ' + detalle.orden.mesa.numero : (detalle.orden.canal.name() == 'MOSTRADOR' ? 'Mostrador' : #strings.replace(detalle.orden.canal.name(), '_', ' '))}">
+                                Mesa 1
+                            </span>
+                        </div>
+                        <span class="badge text-bg-warning text-dark d-inline-block mt-2"
+                              th:if="${detalle.observaciones != null and !#strings.isEmpty(detalle.observaciones)}"
+                              th:text="|Nota: ${detalle.observaciones}|">Nota</span>
+                        <div class="d-grid mt-3">
+                            <form th:action="@{/cocina/detalles/{id}/iniciar(id=${detalle.id})}" method="post">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-play-fill"></i> Iniciar
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                </section>
+            </div>
+
+            <div class="col-lg-4">
+                <section class="kds-col h-100">
+                    <header class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 fw-bold text-white mb-0">En preparación</h2>
+                        <span class="badge text-bg-info" th:text="${#lists.size(enCocina)}">0</span>
+                    </header>
+
+                    <p class="text-secondary small" th:if="${#lists.isEmpty(enCocina)}">Nada en cocina.</p>
+
+                    <article class="kds-card" th:each="detalle : ${enCocina}">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <span class="badge text-bg-dark" th:text="${detalle.orden.numeroOrden}">ORD-000</span>
+                            <span class="text-secondary small"
+                                  th:text="${detalle.orden.createdAt != null ? #temporals.format(detalle.orden.createdAt, 'HH:mm') : '--:--'}">00:00</span>
+                        </div>
+                        <h3 class="h6 fw-bold mt-2 mb-1" th:text="${detalle.producto.nombre}">Producto</h3>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="kds-cantidad" th:text="|x${detalle.cantidad}|">x1</span>
+                            <span class="text-secondary small"
+                                  th:text="${detalle.orden.mesa != null ? 'Mesa ' + detalle.orden.mesa.numero : (detalle.orden.canal.name() == 'MOSTRADOR' ? 'Mostrador' : #strings.replace(detalle.orden.canal.name(), '_', ' '))}">
+                                Mesa 1
+                            </span>
+                        </div>
+                        <span class="badge text-bg-warning text-dark d-inline-block mt-2"
+                              th:if="${detalle.observaciones != null and !#strings.isEmpty(detalle.observaciones)}"
+                              th:text="|Nota: ${detalle.observaciones}|">Nota</span>
+                        <div class="d-grid mt-3">
+                            <form th:action="@{/cocina/detalles/{id}/listo(id=${detalle.id})}" method="post">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="bi bi-check2-circle"></i> Marcar listo
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                </section>
+            </div>
+
+            <div class="col-lg-4">
+                <section class="kds-col h-100">
+                    <header class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 fw-bold text-white mb-0">Listos</h2>
+                        <span class="badge text-bg-success" th:text="${#lists.size(listos)}">0</span>
+                    </header>
+
+                    <p class="text-secondary small" th:if="${#lists.isEmpty(listos)}">Sin ítems listos.</p>
+
+                    <article class="kds-card" th:each="detalle : ${listos}">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <span class="badge text-bg-dark" th:text="${detalle.orden.numeroOrden}">ORD-000</span>
+                            <span class="text-secondary small"
+                                  th:text="${detalle.orden.createdAt != null ? #temporals.format(detalle.orden.createdAt, 'HH:mm') : '--:--'}">00:00</span>
+                        </div>
+                        <h3 class="h6 fw-bold mt-2 mb-1" th:text="${detalle.producto.nombre}">Producto</h3>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="kds-cantidad" th:text="|x${detalle.cantidad}|">x1</span>
+                            <span class="text-secondary small"
+                                  th:text="${detalle.orden.mesa != null ? 'Mesa ' + detalle.orden.mesa.numero : (detalle.orden.canal.name() == 'MOSTRADOR' ? 'Mostrador' : #strings.replace(detalle.orden.canal.name(), '_', ' '))}">
+                                Mesa 1
+                            </span>
+                        </div>
+                        <span class="badge text-bg-warning text-dark d-inline-block mt-2"
+                              th:if="${detalle.observaciones != null and !#strings.isEmpty(detalle.observaciones)}"
+                              th:text="|Nota: ${detalle.observaciones}|">Nota</span>
+                        <div class="d-grid mt-3">
+                            <form th:action="@{/cocina/detalles/{id}/entregado(id=${detalle.id})}" method="post">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-box-arrow-up"></i> Entregar
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+<style>
+    .kds-board {
+        background-color: #0b1220;
+        min-height: calc(100vh - 64px);
+    }
+
+    .kds-col {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 1rem;
+        padding: 1rem;
+        min-height: calc(100vh - 220px);
+    }
+
+    .kds-card {
+        background-color: #f8fafc;
+        border: 0;
+        border-left: 4px solid #e11d48;
+        border-radius: .75rem;
+        padding: .85rem;
+        margin-bottom: .75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    }
+
+    .kds-cantidad {
+        font-size: 1.35rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #e11d48;
+    }
+</style>
+</body>
+</html>

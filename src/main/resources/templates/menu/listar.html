@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/layout :: head('Menú')}"></head>
+<body th:with="tituloPagina='Menú'">
+
+<aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="p-3 p-lg-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h1 class="h4 fw-bold mb-1">Menú</h1>
+            <p class="text-secondary mb-0 small">
+                <span th:text="${#lists.size(productos)}">0</span> productos en la carta.
+            </p>
+        </div>
+        <a class="btn btn-primary fw-semibold" th:href="@{/menu/nuevo}">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo producto
+        </a>
+    </div>
+
+    <ul class="nav nav-pills flex-wrap gap-2 mb-3">
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${categoriaSeleccionada == null} ? 'active'"
+               th:href="@{/menu}">Todos</a>
+        </li>
+        <li class="nav-item" th:each="cat : ${categorias}">
+            <a class="nav-link" th:classappend="${categoriaSeleccionada == cat.name()} ? 'active'"
+               th:href="@{/menu(categoria=${cat})}"
+               th:text="${#strings.capitalize(#strings.replace(#strings.toLowerCase(cat.name()), '_', ' '))}">
+                Categoría
+            </a>
+        </li>
+    </ul>
+
+    <div class="alert alert-info" th:if="${#lists.isEmpty(productos)}" role="alert">
+        <i class="bi bi-info-circle me-2"></i>No hay productos para el filtro seleccionado.
+    </div>
+
+    <div class="card card-pos" th:if="${!#lists.isEmpty(productos)}">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr class="text-secondary small text-uppercase">
+                        <th scope="col" class="ps-3">Código</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Categoría</th>
+                        <th scope="col" class="text-end">Precio</th>
+                        <th scope="col" class="text-center">Stock</th>
+                        <th scope="col" class="text-center">Estado</th>
+                        <th scope="col" class="text-end pe-3">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="producto : ${productos}">
+                        <td class="ps-3"><code th:text="${producto.codigo}">P001</code></td>
+                        <td>
+                            <span class="fw-semibold" th:text="${producto.nombre}">Producto</span>
+                            <span class="d-block small text-secondary" th:if="${producto.descripcion != null}"
+                                  th:text="${producto.descripcion}">Descripción</span>
+                        </td>
+                        <td class="small text-secondary"
+                            th:text="${#strings.capitalize(#strings.replace(#strings.toLowerCase(producto.categoria.name()), '_', ' '))}">
+                            Categoría
+                        </td>
+                        <td class="text-end fw-semibold"
+                            th:text="|$ ${#numbers.formatInteger(producto.precio, 3, 'POINT')}|">$ 0</td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill"
+                                  th:classappend="${producto.stockActual <= producto.stockMinimo} ? 'text-bg-danger' : 'text-bg-success'"
+                                  th:text="${producto.stockActual}">0</span>
+                            <span class="d-block small text-secondary" th:text="|mín. ${producto.stockMinimo}|">mín. 0</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill"
+                                  th:classappend="${producto.disponible} ? 'text-bg-success' : 'text-bg-secondary'"
+                                  th:text="${producto.disponible ? 'Disponible' : 'Agotado'}">Disponible</span>
+                        </td>
+                        <td class="text-end pe-3">
+                            <div class="d-flex flex-wrap justify-content-end align-items-center gap-1">
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/menu/{id}/editar(id=${producto.id})}"
+                                   title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                <form class="d-flex gap-1" th:action="@{/menu/{id}/reponer(id=${producto.id})}"
+                                      method="post">
+                                    <input type="number" name="cantidad" min="1" value="1" required
+                                           class="form-control form-control-sm" style="width: 5rem;"
+                                           th:attr="aria-label=|Cantidad a reponer de ${producto.nombre}|">
+                                    <button class="btn btn-sm btn-outline-success" type="submit"
+                                            title="Reponer stock">
+                                        <i class="bi bi-box-arrow-in-down"></i>
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/menu/{id}/disponibilidad(id=${producto.id})}" method="post">
+                                    <button class="btn btn-sm"
+                                            th:classappend="${producto.disponible} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                            type="submit" title="Cambiar disponibilidad">
+                                        <i class="bi" th:classappend="${producto.disponible} ? 'bi-toggle-on' : 'bi-toggle-off'"></i>
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/menu/{id}/eliminar(id=${producto.id})}" method="post"
+                                      onsubmit="return confirm('¿Eliminar producto?');">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

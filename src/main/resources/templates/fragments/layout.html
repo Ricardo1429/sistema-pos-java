@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' · RestoBar POS'">RestoBar POS</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
+    <!-- Identidad visual RestoBar POS. Estructura de página esperada:
+         <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+         <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+         <main>...</main>
+         El sidebar es fijo desde lg (el body recibe padding-left) y colapsable por debajo de lg. -->
+    <style>
+        :root{
+            --pos-ink:#0F172A;
+            --pos-accent:#E11D48;
+            --pos-accent-dark:#BE123C;
+            --pos-canvas:#F8FAFC;
+            --pos-surface:#fff;
+            --pos-muted:#64748B;
+            --pos-line:#E2E8F0;
+            --pos-radius:1rem;
+            --pos-shadow:0 .125rem .5rem rgba(15,23,42,.08);
+            --pos-focus:0 0 0 .2rem rgba(225,29,72,.25);
+            --pos-nav-link:#94A3B8;
+        }
+        body{background:#f4f6f9;font-family:'Inter',sans-serif;color:var(--pos-ink)}
+        .sidebar{background:var(--pos-ink);min-height:100vh;width:260px}
+        .sidebar .nav-link{color:var(--pos-nav-link)}
+        .sidebar .nav-link.active,.sidebar .nav-link:hover{color:var(--pos-surface);background:rgba(225,29,72,.15);border-left:3px solid var(--pos-accent)}
+        .sidebar .nav-link.active{background:linear-gradient(90deg,rgba(225,29,72,.30),rgba(225,29,72,.10));font-weight:600}
+        .sidebar .nav-link:not(.active):hover{background:rgba(148,163,184,.12);border-left-color:rgba(225,29,72,.55)}
+        .brand-accent{color:var(--pos-accent)}
+        .card-pos{border:0;border-radius:var(--pos-radius);box-shadow:var(--pos-shadow)}
+        .stat-value{font-size:1.75rem;font-weight:700}
+        .mesa-card{cursor:pointer;transition:transform .15s ease}
+        .mesa-card:hover{transform:translateY(-2px)}
+        .badge-estado{font-weight:600;letter-spacing:.02em}
+        .kds-col{min-height:60vh}
+
+        /* Foco visible y coherente en controles interactivos */
+        a:focus-visible,button:focus-visible,input:focus-visible{outline:0;box-shadow:var(--pos-focus)}
+
+        /* --- Layout responsive --- */
+        .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:1030;overflow-y:auto;
+                 flex:0 0 260px;transition:transform .2s ease}
+        .sidebar .nav-link{border-left:3px solid transparent;padding:.65rem 1rem;border-radius:0}
+        .sidebar .nav-link i{width:1.25rem;text-align:center}
+        @media (min-width:992px){
+            body:has(.sidebar){padding-left:260px}
+        }
+        @media (max-width:991.98px){
+            .sidebar{transform:translateX(-100%)}
+            .sidebar.abierto{transform:translateX(0);box-shadow:0 0 2rem rgba(15,23,42,.45)}
+        }
+        /* Las secciones de zona sin mesas no se muestran */
+        .zona-seccion:not(:has(.mesa-item)){display:none}
+
+        /* --- Login --- */
+        .login-bg{background:linear-gradient(135deg,rgba(15,23,42,.86),rgba(15,23,42,.66)),url('/img/fondo.jpg') center/cover no-repeat fixed;min-height:100vh}
+        .login-card{border:0;border-radius:1.25rem;box-shadow:0 1.5rem 3rem rgba(15,23,42,.35)}
+        .login-shell{border-radius:1.25rem;overflow:hidden;background:rgba(15,23,42,.42);
+                     backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+                     border:1px solid rgba(255,255,255,.20);box-shadow:0 1.5rem 4rem rgba(0,0,0,.45)}
+        .login-hero{display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;
+                    min-height:100%;padding:3rem 2.5rem;color:var(--pos-surface);background:transparent}
+        .login-hero::after{content:"";position:absolute;right:-25%;bottom:-35%;width:22rem;height:22rem;
+                           border-radius:50%;pointer-events:none;
+                           background:radial-gradient(circle,rgba(225,29,72,.35),transparent 65%)}
+        .login-hero > *{position:relative;z-index:1}
+        .login-brand-mark{display:inline-flex;align-items:center;justify-content:center;width:3.25rem;height:3.25rem;
+                          border-radius:1rem;background:var(--pos-accent);color:var(--pos-surface);font-size:1.75rem;
+                          box-shadow:0 .5rem 1.25rem rgba(225,29,72,.35)}
+        .login-feature{display:flex;align-items:flex-start;gap:.85rem;padding:.6rem .75rem;border-radius:.75rem;
+                       transition:background .2s ease,transform .2s ease}
+        .login-feature:hover{background:rgba(255,255,255,.08);transform:translateX(3px)}
+        .login-feature i{margin-top:.15rem;color:var(--pos-accent);font-size:1.1rem}
+        .login-panel{background:transparent;color:var(--pos-surface);padding:2.5rem 2rem}
+        .login-panel .text-secondary,.login-panel small,.login-panel .form-label{color:rgba(255,255,255,.82)}
+        .login-input{background:rgba(255,255,255,.09);color:#fff;border:1px solid rgba(255,255,255,.30);
+                     padding:.7rem .9rem;
+                     transition:border-color .2s ease,box-shadow .2s ease}
+        .login-input:focus{border-color:var(--pos-accent);box-shadow:var(--pos-focus)}
+        .login-input::placeholder{color:rgba(255,255,255,.55)}
+        .login-panel .input-group-text{background:rgba(255,255,255,.10);color:#fff;border-color:rgba(255,255,255,.30)}
+        .login-panel #togglePassword{color:#fff;border-color:rgba(255,255,255,.30);background:rgba(255,255,255,.06)}
+        .login-panel .card{background:rgba(15,23,42,.35);border:1px solid rgba(255,255,255,.14)}
+        .login-panel .btn-link{color:#fff}
+        .login-btn{border:0;border-radius:.75rem;background:var(--pos-accent);color:var(--pos-surface);
+                   font-weight:600;padding:.8rem 1rem;
+                   transition:background .2s ease,transform .15s ease,box-shadow .2s ease}
+        .login-btn:hover,.login-btn:focus{background:var(--pos-accent-dark);color:var(--pos-surface);
+                                          transform:translateY(-1px);box-shadow:0 .5rem 1rem rgba(190,18,60,.25)}
+        .demo-list{list-style:none;margin:0;padding:0}
+        .demo-list li{display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+                      padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.16)}
+        .demo-list li:last-child{border-bottom:0}
+        .demo-list code{color:#fff}
+
+        @media (prefers-reduced-motion: reduce){
+            *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;
+                                 animation-iteration-count:1!important;transition:none!important}
+        }
+
+        /* --- Unificación visual: bordes, estados y cifras alineadas --- */
+        .tabular-nums{font-variant-numeric:tabular-nums}
+        .card-pos{border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 2px 4px rgba(0,0,0,.02);
+                  transition:transform .15s ease,box-shadow .15s ease}
+        .card-mesa:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.06)}
+        .estado-disponible{border-left:5px solid #10b981!important}
+        .estado-ocupada{border-left:5px solid #ef4444!important}
+        .estado-cobrar{border-left:5px solid #f59e0b!important}
+        .badge-soft-success{background:#d1fae5;color:#065f46}
+        .badge-soft-danger{background:#fee2e2;color:#991b1b}
+        .badge-soft-warning{background:#fef3c7;color:#92400e}
+    </style>
+</head>
+<body>
+<th:block th:fragment="scripts">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</th:block>
+</body>
+</html>

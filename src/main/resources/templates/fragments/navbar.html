@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
+<body>
+<nav class="navbar navbar-light bg-white border-bottom border-secondary-subtle shadow-sm sticky-top px-3 px-lg-4 py-2" th:fragment="navbar">
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm d-lg-none" type="button" id="btnSidebar"
+                aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+            <i class="bi bi-list fs-5" aria-hidden="true"></i>
+        </button>
+        <span class="fw-semibold text-dark"
+              th:text="${#strings.isEmpty(tituloPagina) ? 'Panel general' : tituloPagina}">Panel general</span>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <span class="badge rounded-pill bg-success-subtle text-success-emphasis"
+              th:if="${turnoAbierto != null}">
+            <i class="bi bi-cash-coin me-1" aria-hidden="true"></i>Turno abierto
+        </span>
+        <div class="d-flex align-items-center gap-2" aria-label="Usuario actual">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger-subtle text-danger-emphasis fw-bold"
+                  style="width:2rem;height:2rem"
+                  th:text="${usuarioActual != null and !#strings.isEmpty(usuarioActual.nombre) ? #strings.substring(usuarioActual.nombre,0,1) : '?'}">?</span>
+            <div class="d-none d-sm-flex flex-column lh-sm">
+                <span class="small fw-semibold text-dark"
+                      th:text="${usuarioActual != null ? usuarioActual.nombre : 'Invitado'}">Invitado</span>
+                <span class="small text-danger fw-semibold" style="letter-spacing:.08em"
+                      th:text="${#strings.isEmpty(rolActual) ? 'SIN ROL' : rolActual}">ADMIN</span>
+            </div>
+        </div>
+        <div class="vr d-none d-sm-block" aria-hidden="true"></div>
+        <form class="d-flex mb-0" th:action="@{/logout}" method="post">
+            <button class="btn btn-sm btn-outline-danger" type="submit">
+                <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Salir
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var sidebar = document.querySelector('.sidebar');
+            var abrir = document.getElementById('btnSidebar');
+            var cerrar = document.getElementById('btnCerrarSidebar');
+            if (!sidebar) return;
+
+            function alternar(estado) {
+                sidebar.classList.toggle('abierto', estado);
+                if (abrir) abrir.setAttribute('aria-expanded', estado ? 'true' : 'false');
+            }
+
+            if (abrir) {
+                abrir.addEventListener('click', function () {
+                    alternar(!sidebar.classList.contains('abierto'));
+                });
+            }
+            if (cerrar) {
+                cerrar.addEventListener('click', function () { alternar(false); });
+            }
+            sidebar.addEventListener('click', function (evento) {
+                if (evento.target.closest('a') && window.innerWidth < 992) alternar(false);
+            });
+        });
+    </script>
+</nav>
+</body>
+</html>

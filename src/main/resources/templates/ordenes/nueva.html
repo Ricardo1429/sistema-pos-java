@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Nueva orden')}"></head>
+<body class="d-flex">
+<aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+<main class="flex-grow-1">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="p-4">
+        <div class="mb-4">
+            <a th:href="@{/ordenes}" class="btn btn-sm btn-outline-secondary mb-2">
+                <i class="bi bi-arrow-left"></i> Volver a órdenes
+            </a>
+            <h1 class="h3 fw-bold mb-1">Nueva orden</h1>
+            <p class="text-secondary mb-0">Selecciona el canal de venta para abrir la comanda.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card rounded-4 border-0 shadow-sm">
+                    <div class="card-body">
+                        <form th:action="@{/ordenes/nueva}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label" for="canal">Canal</label>
+                                <select class="form-select" id="canal" name="canal" required>
+                                    <option th:each="c : ${canales}"
+                                            th:value="${c}"
+                                            th:text="${#strings.replace(c.name(), '_', ' ')}">MESA</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="grupoCodigoExterno">
+                                <label class="form-label" for="codigoExternoDelivery">Código externo delivery</label>
+                                <input class="form-control" type="text" id="codigoExternoDelivery"
+                                       name="codigoExternoDelivery" maxlength="60" placeholder="Ej. RAPPI-12345">
+                                <div class="form-text">Lo exige la plataforma de delivery para conciliar el pedido.</div>
+                            </div>
+
+                            <div class="mb-3" id="grupoMesa">
+                                <label class="form-label" for="mesaId">Mesa</label>
+                                <select class="form-select" id="mesaId" name="mesaId">
+                                    <option value="">Seleccione una mesa disponible</option>
+                                    <option th:each="m : ${mesasDisponibles}" th:value="${m.id}"
+                                            th:text="|Mesa ${m.numero} · ${m.zona}|">Mesa 1</option>
+                                </select>
+                                <div class="form-text">Para una mesa ya ocupada, usa “Pedir más” desde el mapa de mesas.</div>
+                            </div>
+
+                            <div class="alert alert-light border small mb-4">
+                                <i class="bi bi-info-circle"></i>
+                                RAPPI / UBER_EATS / DIDI_FOOD exigen código externo y no usan mesa.
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-danger" type="submit">Crear orden</button>
+                                <a th:href="@{/ordenes}" class="btn btn-outline-secondary">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+<script>
+    (function () {
+        var canal = document.getElementById('canal');
+        var grupo = document.getElementById('grupoCodigoExterno');
+        var codigo = document.getElementById('codigoExternoDelivery');
+        if (!canal || !grupo || !codigo) {
+            return;
+        }
+
+        function actualizar() {
+            var sinCodigo = canal.value === 'MESA' || canal.value === 'MOSTRADOR';
+            grupo.classList.toggle('d-none', sinCodigo);
+            if (sinCodigo) {
+                codigo.value = '';
+            }
+            var grupoMesa = document.getElementById('grupoMesa');
+            var mesa = document.getElementById('mesaId');
+            if (grupoMesa) {
+                var esMesa = canal.value === 'MESA';
+                grupoMesa.classList.toggle('d-none', !esMesa);
+                if (mesa) {
+                    mesa.required = esMesa;
+                    if (!esMesa) mesa.value = '';
+                }
+            }
+        }
+
+        canal.addEventListener('change', actualizar);
+        actualizar();
+    })();
+</script>
+</body>
+</html>
