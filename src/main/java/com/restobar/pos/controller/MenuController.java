@@ -22,10 +22,16 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Controller
 @RequestMapping("/menu")
 public class MenuController {
+
+    private static final Pattern CODIGO_SERIE = Pattern.compile("^P(\\d{3})$");
+    private static final int ULTIMO_CODIGO_SERIE = 999;
 
     private final ProductoRepository productoRepository;
 
@@ -81,6 +87,7 @@ public class MenuController {
                           BindingResult bindingResult,
                           Model model,
                           RedirectAttributes redirectAttributes) {
+        asignarCodigoSiFalta(producto);
         if (!bindingResult.hasErrors() && codigoDuplicado(producto)) {
             bindingResult.rejectValue("codigo", "duplicado", "El código ya existe");
         }
@@ -146,6 +153,32 @@ public class MenuController {
     private Producto buscarProducto(Long id) {
         return productoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    private void asignarCodigoSiFalta(Producto producto) {
+        if (producto.getId() != null) {
+            return;
+        }
+        String codigo = producto.getCodigo();
+        if (codigo != null && !codigo.isBlank()) {
+            return;
+        }
+        int numero = productoRepository.findAll().stream()
+                .map(Producto::getCodigo)
+                .filter(Objects::nonNull)
+                .map(CODIGO_SERIE::matcher)
+                .filter(Matcher::matches)
+                .mapToInt(matcher -> Integer.parseInt(matcher.group(1)))
+                .max()
+                .orElse(0) + 1;
+        for (; numero <= ULTIMO_CODIGO_SERIE; numero++) {
+            String candidato = String.format("P%03d", numero);
+            if (!productoRepository.existsByCodigo(candidato)) {
+                producto.setCodigo(candidato);
+                return;
+            }
+        }
+        throw new ReglaNegocioException("No hay códigos de producto disponibles");
     }
 
     private boolean codigoDuplicado(Producto producto) {

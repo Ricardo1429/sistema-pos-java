@@ -56,7 +56,10 @@ public class CocinaController {
     @PostMapping("/detalles/{id}/entregado")
     @Transactional
     public String entregado(@PathVariable Long id) {
-        cambiarEstado(id, EstadoItem.ENTREGADO);
+        DetalleOrden detalle = cambiarEstado(id, EstadoItem.ENTREGADO);
+        Orden orden = detalle.getOrden();
+        orden.marcarListaSiTodoEntregado();
+        ordenRepository.save(orden);
         return "redirect:/cocina";
     }
 
@@ -76,10 +79,10 @@ public class CocinaController {
                 .toList();
     }
 
-    private void cambiarEstado(Long detalleId, EstadoItem estado) {
+    private DetalleOrden cambiarEstado(Long detalleId, EstadoItem estado) {
         DetalleOrden detalle = detalleOrdenRepository.findById(detalleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         detalle.setEstadoItem(estado);
-        detalleOrdenRepository.save(detalle);
+        return detalleOrdenRepository.save(detalle);
     }
 }

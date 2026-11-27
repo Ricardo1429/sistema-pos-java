@@ -34,7 +34,7 @@
                         <label class="form-label fw-semibold" for="codigo">Código</label>
                         <input type="text" class="form-control" id="codigo" th:field="*{codigo}"
                                th:classappend="${#fields.hasErrors('codigo')} ? 'is-invalid'"
-                               placeholder="P001" maxlength="40">
+                               placeholder="Se genera automáticamente" maxlength="40">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('codigo')}"
                              th:errors="*{codigo}">Error</div>
                     </div>

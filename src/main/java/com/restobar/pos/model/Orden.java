@@ -173,6 +173,18 @@ public class Orden {
         }
     }
 
+    public void marcarListaSiTodoEntregado() {
+        if (estado != EstadoOrden.EN_PREPARACION) {
+            return;
+        }
+        boolean todoEntregado = detalles.stream()
+                .filter(detalle -> detalle.getEstadoItem() != EstadoItem.ANULADO)
+                .allMatch(detalle -> detalle.getEstadoItem() == EstadoItem.ENTREGADO);
+        if (todoEntregado) {
+            this.estado = EstadoOrden.LISTA;
+        }
+    }
+
     public void procesarPagoPOS() {
         if (estado == EstadoOrden.PAGADA) {
             throw new ReglaNegocioException("La orden ya fue pagada");
